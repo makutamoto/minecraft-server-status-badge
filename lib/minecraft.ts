@@ -14,7 +14,7 @@ export interface Status {
     },
     players: {
         max: number,
-        onlnie: number,
+        online: number,
         sample: {
             name: string,
             id: string,
@@ -31,7 +31,7 @@ export function NumberToVarNumber(data: number): Buffer {
     while(true) {
         const byte = Buffer.alloc(1);
         byte[0] = data & 0b01111111;
-        data >>= 7;
+        data >>>= 7;
         if(data !== 0) byte[0] |= 0b10000000;
         res = Buffer.concat([res, byte]);
         if(data === 0) break;
@@ -45,7 +45,7 @@ export function VarNumberToNumber(buffer: Buffer): [number, Buffer] {
     for(;;i++) {
         let byte = buffer[i];
         res |= (byte & 0b01111111) << 7 * i;
-        if(byte >> 7 ^ 1) break;
+        if(byte >>> 7 ^ 1) break;
     }
     let slice = buffer.slice(i + 1);
     return [res, slice];

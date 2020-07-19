@@ -21,8 +21,10 @@ test('lib/minecraft/UnsignedShortToNumber', () => {
 });
 
 test('lib/minecraft/NumberToVarNumber', () => {
-    const res = Buffer.from([0xE0, 0x05]);
-    expect(NumberToVarNumber(736)).toEqual(res);
+    const res1 = Buffer.from([0xE0, 0x05]);
+    const res2 = Buffer.from([0xFF, 0xFF, 0xFF, 0xFF, 0x0F]);
+    expect(NumberToVarNumber(736)).toEqual(res1);
+    expect(NumberToVarNumber(-1)).toEqual(res2);
 });
 
 test('lib/minecraft/VarNumberToNumber', () => {
