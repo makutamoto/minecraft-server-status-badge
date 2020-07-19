@@ -124,5 +124,9 @@ export async function fetchStatus(version: number, host: string, port: number): 
             client.destroy();
             resolve(null);
         });
+        client.once('timeout', () => {
+            client.destroy();
+            resolve(null);
+        });
     });
 }

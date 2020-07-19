@@ -12,7 +12,6 @@ const json = (version: string | null, online: Online | null) => ({
     label: 'Minecraft' + (version === null ? '' : ` ${version}`),
     message: online === null ? 'Offline' : `${online.online}/${online.max}`,
     color: online === null ? 'red' : 'green',
-    cacheSeconds: 1800,
 });
 
 export default async function(req: NextApiRequest, res: NextApiResponse) {
