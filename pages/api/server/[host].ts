@@ -7,6 +7,8 @@ export interface Online {
     online: number,
 }
 
+const DEFAULT_PORT = 25565;
+
 const json = (version: string | null, online: Online | null) => ({
     schemaVersion: 1,
     label: 'Minecraft' + (version === null ? '' : ` ${version}`),
@@ -16,7 +18,8 @@ const json = (version: string | null, online: Online | null) => ({
 
 export default async function(req: NextApiRequest, res: NextApiResponse) {
     let host = req.query.host as string;
-    let status = await fetchStatus(-1, host, 25565);
+    let port = req.query.port === undefined ? DEFAULT_PORT : Number(req.query.port as string);
+    let status = await fetchStatus(-1, host, port);
     let online: Online = status && status.players;
     let version = status && status.version.name;
     res.setHeader('Content-type', 'application/json');

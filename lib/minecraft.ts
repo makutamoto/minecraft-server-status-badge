@@ -26,6 +26,8 @@ export interface Status {
     favicon: string,
 }
 
+const TIMEOUT = 1000;
+
 export function NumberToVarNumber(data: number): Buffer {
     let res = Buffer.alloc(0);
     while(true) {
@@ -124,7 +126,7 @@ export async function fetchStatus(version: number, host: string, port: number): 
             client.destroy();
             resolve(null);
         });
-        client.once('timeout', () => {
+        client.setTimeout(TIMEOUT, () => {
             client.destroy();
             resolve(null);
         });
