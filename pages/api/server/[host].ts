@@ -7,10 +7,10 @@ export interface Online {
     online: number,
 }
 
-const json = (online: Online | null) => ({
+const json = (host: string, online: Online | null) => ({
     schemaVersion: 1,
-    label: 'Minecraft Server',
-    message: online === null ? 'Stopped' : `${online.online}/${online.max}`,
+    label: host,
+    message: online === null ? 'Offline' : `${online.online}/${online.max}`,
     color: online === null ? 'red' : 'green',
     cacheSeconds: 1800,
 });
@@ -20,5 +20,5 @@ export default async function(req: NextApiRequest, res: NextApiResponse) {
     let status = await fetchStatus(-1, host, 25565);
     let online: Online = status && status.players;
     res.setHeader('Content-type', 'application/json');
-    res.status(200).send(JSON.stringify(json(online)));
+    res.status(200).send(JSON.stringify(json(host, online)));
 }
