@@ -102,7 +102,7 @@ export function Unpack(buffer: Buffer): Packet {
     };
 }
 
-export async function fetchStatus(version: number, host: string, port: number): Promise<Status> {
+export async function fetchStatus(version: number, host: string, port: number): Promise<Status | null> {
     return new Promise((resolve) => {
         const client = net.connect(port, host, () => {
             client.once('data', (data) => {

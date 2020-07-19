@@ -7,9 +7,9 @@ export interface Online {
     online: number,
 }
 
-const json = (version: string, online: Online | null) => ({
+const json = (version: string | null, online: Online | null) => ({
     schemaVersion: 1,
-    label: `Minecraft ${version}`,
+    label: 'Minecraft' + (version === null ? '' : ` ${version}`),
     message: online === null ? 'Offline' : `${online.online}/${online.max}`,
     color: online === null ? 'red' : 'green',
     cacheSeconds: 1800,
