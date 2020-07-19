@@ -106,29 +106,34 @@ export function Unpack(buffer: Buffer): Packet {
 
 export async function fetchStatus(version: number, host: string, port: number): Promise<Status | null> {
     return new Promise((resolve) => {
-        const client = net.connect(port, host, () => {
-            client.once('data', (data) => {
-                let packet = Unpack(data);
-                let [json,] = VarStringToString(packet.data);
-                let status: Status = JSON.parse(json);
+        try {
+            const client = net.connect(port, host, () => {
+                client.once('data', (data) => {
+                    let packet = Unpack(data);
+                    let [json,] = VarStringToString(packet.data);
+                    let status: Status = JSON.parse(json);
+                    client.destroy();
+                    resolve(status);
+                });
+                const handshake = Handshake(version, host, port, HANDSHAKE_STATUS_STATE);
+                const packet = Packet(0x00, handshake);
+                client.write(packet, () => {
+                    const status = Packet(0x00, Buffer.alloc(0));
+                    client.write(status);
+                });
+            });
+            client.once('error', (err) => {
+                console.error(err);
                 client.destroy();
-                resolve(status);
+                resolve(null);
             });
-            const handshake = Handshake(version, host, port, HANDSHAKE_STATUS_STATE);
-            const packet = Packet(0x00, handshake);
-            client.write(packet, () => {
-                const status = Packet(0x00, Buffer.alloc(0));
-                client.write(status);
+            client.setTimeout(TIMEOUT, () => {
+                client.destroy();
+                resolve(null);
             });
-        });
-        client.once('error', (err) => {
-            console.error(err);
-            client.destroy();
+        } catch(e) {
+            console.error(e);
             resolve(null);
-        });
-        client.setTimeout(TIMEOUT, () => {
-            client.destroy();
-            resolve(null);
-        });
+        }
     });
 }
