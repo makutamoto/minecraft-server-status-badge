@@ -119,5 +119,10 @@ export async function fetchStatus(version: number, host: string, port: number): 
                 client.write(status);
             });
         });
+        client.once('error', (err) => {
+            console.error(err);
+            client.destroy();
+            resolve(null);
+        });
     });
 }

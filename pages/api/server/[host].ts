@@ -15,10 +15,10 @@ const json = (online: Online | null) => ({
     cacheSeconds: 1800,
 });
 
-export default async function (req: NextApiRequest, res: NextApiResponse) {
+export default async function(req: NextApiRequest, res: NextApiResponse) {
     let host = req.query.host as string;
     let status = await fetchStatus(-1, host, 25565);
-    let online: Online = status.players;
+    let online: Online = status && status.players;
     res.setHeader('Content-type', 'application/json');
     res.status(200).send(JSON.stringify(json(online)));
 }
