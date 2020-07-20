@@ -3,8 +3,8 @@ import net from 'net';
 const HANDSHAKE_STATUS_STATE = 0x01;
 
 export interface Packet {
+    length: number,
     id: number,
-    data: Buffer,
 }
 
 export interface Status {
@@ -95,29 +95,37 @@ export function Packet(id: number, data: Buffer): Buffer {
     return res;
 }
 
-export function Unpack(buffer: Buffer): Packet {
-    const [, buf] = VarNumberToNumber(buffer);
+export function Unpack(buffer: Buffer): [Packet, Buffer] {
+    const [len, buf] = VarNumberToNumber(buffer);
     const [id, data] = VarNumberToNumber(buf);
-    return {
-        id,
-        data
-    };
+    const res: Packet = { length: len - buffer.length + buf.length, id };
+    return [res, data];
 }
 
 export async function fetchStatus(version: number, host: string, port: number): Promise<Status | null> {
     return new Promise((resolve) => {
         try {
             const client = net.connect(port, host, () => {
-                client.once('data', (data) => {
-                    let packet = Unpack(data);
-                    let [json,] = VarStringToString(packet.data);
-                    let status: Status = JSON.parse(json);
-                    client.destroy();
-                    resolve(status);
+                let packet: Packet | null = null;
+                let data = Buffer.alloc(0);
+                client.on('data', (part) => {
+                    if(packet === null) [packet, part] = Unpack(part);
+                    data = Buffer.concat([data, part]);
+                    if(data.length >= packet.length) {
+                        try {
+                            let [json,] = VarStringToString(data);
+                            let status: Status = JSON.parse(json);
+                            client.destroy();
+                            resolve(status);
+                        } catch(e) {
+                            console.error(e);
+                            resolve(null);
+                        }
+                    }
                 });
                 const handshake = Handshake(version, host, port, HANDSHAKE_STATUS_STATE);
-                const packet = Packet(0x00, handshake);
-                client.write(packet, () => {
+                const handshake_packet = Packet(0x00, handshake);
+                client.write(handshake_packet, () => {
                     const status = Packet(0x00, Buffer.alloc(0));
                     client.write(status);
                 });
